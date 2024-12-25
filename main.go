@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -99,56 +98,49 @@ func main() {
 		HideHelpCommand: true,
 		Commands: []*cli.Command{
 			{
-				Name:            "reminders",
-				Usage:           "Manage reminders",
-				HideHelpCommand: true,
-				Subcommands: []*cli.Command{
-					{
-						Name:  "add",
-						Usage: "Schedule a new reminder",
-						Flags: []cli.Flag{
-							&cli.StringFlag{
-								Name:    "title",
-								Aliases: []string{"t"},
-								Usage:   "Reminder's `title`",
-							},
-							&cli.TimestampFlag{
-								Name:    "due",
-								Aliases: []string{"d"},
-								Usage:   "Reminder's due `date` in the YYYY-MM-DD format",
-								Layout:  dueDateLayout,
-							},
-						},
-						Action: func(ctx *cli.Context) error {
-							title := ctx.String("title")
-							due := ctx.Timestamp("due")
-
-							fmt.Printf("title: %q\n", title)
-							fmt.Printf("due: %q\n", due)
-
-							// TODO: if no flags provided, show a TUI interface
-							if title == "" || due == nil {
-								return cli.Exit("Error: title and date are required", 1)
-							}
-
-							fmt.Println("Adding reminder")
-							id, err := reminders.Insert(title, due)
-							if err != nil {
-								return err
-							}
-							fmt.Println("Reminder added: ", id)
-
-							return nil
-						},
-						OnUsageError: func(ctx *cli.Context, err error, isSubcommand bool) error {
-							fmt.Println("Usage error: ", err.Error())
-							return nil
-						},
+				Name:  "add",
+				Usage: "Schedule a new reminder",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:    "title",
+						Aliases: []string{"t"},
+						Usage:   "Reminder's `title`",
 					},
+					&cli.TimestampFlag{
+						Name:    "due",
+						Aliases: []string{"d"},
+						Usage:   "Reminder's due `date` in the YYYY-MM-DD format",
+						Layout:  dueDateLayout,
+					},
+				},
+				Action: func(ctx *cli.Context) error {
+					title := ctx.String("title")
+					due := ctx.Timestamp("due")
+
+					// fmt.Printf("title: %q\n", title)
+					// fmt.Printf("due: %q\n", due)
+
+					// TODO: if no flags provided, show a TUI interface
+					if title == "" || due == nil {
+						return cli.Exit("Error: title and due date are required", 1)
+					}
+
+					_, err := reminders.Insert(title, due)
+					if err != nil {
+						return err
+					}
+					fmt.Println("Reminder added: ", title)
+
+					return nil
+				},
+				OnUsageError: func(ctx *cli.Context, err error, isSubcommand bool) error {
+					fmt.Println("Usage error: ", err.Error())
+					return nil
 				},
 			},
 		},
 		Action: func(ctx *cli.Context) error {
+			// When ran without arguments, show all reminders due today
 			if ctx.Args().Present() {
 				return cli.Exit(
 					fmt.Sprintf(
@@ -158,26 +150,14 @@ func main() {
 					), 1)
 			}
 
-			r, err := reminders.Get(4)
-			if err != nil {
-				if errors.Is(err, models.ErrNoRecord) {
-					log.Println("Reminder not found")
-				} else {
-					log.Println("Error getting reminder: ", err.Error())
-				}
-			} else {
-				log.Printf("Reminder (%d) %q due at %q\n", r.ID, r.Title, r.DueAt.Format("2006-01-02"))
-			}
-
-			fmt.Println("All Reminders:")
-			date, _ := time.Parse("2006-01-02", "2024-12-15")
-			due, err := reminders.GetDue(&date)
+			due, err := reminders.GetDueToday()
 			if err != nil {
 				return err
 			}
 
+			fmt.Println("grem reminders (oldest first):")
 			for _, reminder := range due {
-				fmt.Printf("%+v\n", reminder)
+				fmt.Printf("%s (id: %03d): %s \n", reminder.DueAt.Format(time.DateOnly), reminder.ID, reminder.Title)
 			}
 
 			return nil

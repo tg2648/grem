@@ -67,7 +67,12 @@ func (m *ReminderModel) GetDue(date *time.Time) ([]*Reminder, error) {
 	stmt := `
 		SELECT id, title, due_at, dismissed_at, created_at
 		FROM reminders
-		WHERE date(due_at) <= date(?)
+		WHERE
+			dismissed_at IS NULL AND
+			date(due_at) <= date(?)
+		ORDER BY
+			due_at,
+			id
 	`
 
 	rows, err := m.DB.Query(stmt, date)
