@@ -14,7 +14,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-const configDirName = ".grem"
+const appDirName = ".grem"
 const dueDateLayout = "2006-01-02"
 
 func directoryExists(path string) bool {
@@ -34,12 +34,12 @@ func setup(db *sql.DB) {
 		log.Fatalf("Unable to determine user's home directory: %s", err.Error())
 	}
 
-	configDir := homeDir + "/" + configDirName
-	if !directoryExists(configDir) {
-		if err = os.Mkdir(configDir, 0755); err != nil {
-			log.Fatalf("Unable to create the config directory: %s", err.Error())
+	appDir := homeDir + "/" + appDirName
+	if !directoryExists(appDir) {
+		if err = os.Mkdir(appDir, 0755); err != nil {
+			log.Fatalf("Unable to create the application directory directory: %s", err.Error())
 		}
-		log.Printf("Created config directory in %s", configDir)
+		log.Printf("Created the application directory in %s", appDir)
 	}
 
 	sqlStmt := `
