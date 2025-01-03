@@ -102,15 +102,18 @@ func main() {
 				Usage: "Schedule a new reminder",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:    "title",
-						Aliases: []string{"t"},
-						Usage:   "Reminder's `title`",
+						Name:     "title",
+						Aliases:  []string{"t"},
+						Usage:    "Reminder's `title`",
+						Required: true,
 					},
 					&cli.TimestampFlag{
-						Name:    "due",
-						Aliases: []string{"d"},
-						Usage:   "Reminder's due `date` in the YYYY-MM-DD format",
-						Layout:  dueDateLayout,
+						Name:        "due",
+						Aliases:     []string{"d"},
+						Usage:       "Reminder's due `date` in the YYYY-MM-DD format",
+						DefaultText: "Current date",
+						Value:       cli.NewTimestamp(time.Now()),
+						Layout:      dueDateLayout,
 					},
 				},
 				Action: func(ctx *cli.Context) error {
@@ -120,16 +123,11 @@ func main() {
 					// fmt.Printf("title: %q\n", title)
 					// fmt.Printf("due: %q\n", due)
 
-					// TODO: if no flags provided, show a TUI interface
-					if title == "" || due == nil {
-						return cli.Exit("Error: title and due date are required", 1)
-					}
-
 					_, err := reminders.Insert(title, due)
 					if err != nil {
 						return err
 					}
-					fmt.Println("Reminder added: ", title)
+					fmt.Printf("Reminder added: %q due %s\n", title, due.Format(time.DateOnly))
 
 					return nil
 				},
