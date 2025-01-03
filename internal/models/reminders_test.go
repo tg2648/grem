@@ -8,24 +8,28 @@ import (
 
 func TestReminderModelGet(t *testing.T) {
 	tests := []struct {
-		name       string
-		reminderId int
-		want       bool
+		name        string
+		reminderId  int
+		want        bool
+		expectedErr error
 	}{
 		{
-			name:       "Valid ID",
-			reminderId: 1,
-			want:       true,
+			name:        "Valid ID",
+			reminderId:  1,
+			want:        true,
+			expectedErr: nil,
 		},
 		{
-			name:       "Zero ID",
-			reminderId: 0,
-			want:       false,
+			name:        "Zero ID",
+			reminderId:  0,
+			want:        false,
+			expectedErr: ErrNoRecord,
 		},
 		{
-			name:       "Non-existent ID",
-			reminderId: 2,
-			want:       false,
+			name:        "Non-existent ID",
+			reminderId:  2,
+			want:        false,
+			expectedErr: ErrNoRecord,
 		},
 	}
 
@@ -35,8 +39,13 @@ func TestReminderModelGet(t *testing.T) {
 
 			m := ReminderModel{db}
 
-			reminder, _ := m.Get(tt.reminderId)
+			reminder, err := m.Get(tt.reminderId)
 			assert.Equal(t, reminder != nil, tt.want)
+			assert.Equal(t, err, tt.expectedErr)
 		})
 	}
+}
+
+func TestReminderModelGetDue(t *testing.T) {
+	
 }
