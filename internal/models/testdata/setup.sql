@@ -7,4 +7,8 @@ CREATE TABLE IF NOT EXISTS reminders (
 );
 
 INSERT INTO reminders (title, due_at, dismissed_at, created_at) VALUES
-("One", "2024-12-30", NULL, "2024-12-28");
+("One", "2024-12-28", NULL, "2024-12-28"),
+("Two", "2024-12-28", "2024-12-29", "2024-12-28"),
+("Three", "2024-12-30", NULL, "2024-12-28"),
+("Four", "2024-12-30", NULL, "2024-12-28"),
+("Five", "2024-12-31", NULL, "2024-12-28");
